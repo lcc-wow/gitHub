@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="72140a26-19be-42a0-a9ba-15c9b26cbba1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/new.iml" afterDir="false" />
-    </list>
+    <list default="true" id="72140a26-19be-42a0-a9ba-15c9b26cbba1" name="Changes" comment="try" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,6 +13,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/lcc-wow/gitHub.git",
+    "accountId": "f2669b28-7784-4a09-aba9-c33448ae43c3"
+  }
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 4
 }]]></component>
@@ -68,8 +68,17 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1737012967245</updated>
-      <workItem from="1737012968249" duration="386000" />
+      <workItem from="1737012968249" duration="745000" />
     </task>
+    <task id="LOCAL-00001" summary="try">
+      <option name="closed" value="true" />
+      <created>1737013517434</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1737013517434</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -85,5 +94,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="try" />
+    <option name="LAST_COMMIT_MESSAGE" value="try" />
   </component>
 </project>
