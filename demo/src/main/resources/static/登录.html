@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+<form id="loginForm">
+    <label for="username">用户名:</label>
+    <input type="text" id="username" name="username" placeholder="请输入用户名">
+    <label for="password">密码:</label>
+    <input type="password" id="password" placeholder="请输入密码">
+    <button type="button" onclick="login()">登录</button>
+</form>
+<script>
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        // 创建 LoginRequest 对象
+        const User = {
+            username: username,
+            password: password
+        };
+
+        fetch('http://localhost:8080/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(User)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 1) {
+                    const token = data.data;
+                    // 将令牌保存到localStorage
+                    localStorage.setItem('authToken', token);
+                    // 返回的用户类型为 'Staff' 或 'Manager'
+                    if (data.data1 === 'Staff') {
+                        window.location.href = '员工页面.html';
+                    } else if (data.data1 === 'Manager') {
+                        window.location.href = '管理员页面.html';
+
+                    } else {
+                        alert('浏览器不支持 localStorage');
+                    }
+                } else {
+                    alert('登录失败，请检查用户名和密码');
+                }
+            })
+            .catch(error => {
+                console.error('登录请求出错:', error);
+                alert('登录请求出错，请稍后再试');
+            });
+    }
+</script>
+</body>
+
+</html>

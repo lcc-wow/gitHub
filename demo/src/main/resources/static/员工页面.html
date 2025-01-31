@@ -1,0 +1,296 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>员工页面</title>
+    <style>
+        /* 添加样式以分割页面并设置背景颜色 */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .left-panel {
+            width: 20%;
+            background-color: lightblue;
+            padding: 200px 20px;
+            height: 100%;
+        }
+        .right-panel {
+            width: 80%;
+            background-color: white;
+            padding: 20px;
+            height: 100%;
+        }
+        .button {
+            display: block;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 80%;
+            text-align: center;
+            background-color: #21657e;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #385578;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* 模态框样式 */
+        .modal {
+            display: none; /* 隐藏模态框 */
+            position: fixed; /* 固定位置 */
+            z-index: 1; /* 确保模态框在最上层 */
+            left: 0;
+            top: 0;
+            width: 100%; /* 宽度占满整个屏幕 */
+            height: 100%; /* 高度占满整个屏幕 */
+            overflow: auto; /* 允许滚动 */
+            background-color: rgb(0,0,0); /* 背景颜色 */
+            background-color: rgba(0,0,0,0.4); /* 半透明背景颜色 */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 垂直居中 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%; /* 修改宽度为50% */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="left-panel">
+        <!-- 添加按钮 -->
+        <a href="#" class="button" onclick="viewPersonalInfo()">查看个人信息</a>
+        <a href="#" class="button" onclick="editPersonalInfo()">修改个人信息</a>
+        <a href="#" class="button">查看工资情况</a>
+        <a href="#" class="button">查看出勤状态</a>
+        <a href="#" class="button">查询活动信息</a>
+        <a href="#" class="button">请假或离职申请</a>
+        <a href="#" class="button" onclick="logout()">退出登录</a>
+    </div>
+    <div class="right-panel">
+        <table id="personalInfoTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>内容</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>工号</td>
+                    <td id="id"></td>
+                </tr>
+                <tr>
+                    <td>姓名</td>
+                    <td id="name"></td>
+                </tr>
+                <tr>
+                    <td>用户名</td>
+                    <td id="username"></td>
+                </tr>
+                <tr>
+                    <td>性别</td>
+                    <td id="gender"></td>
+                </tr>
+                <tr>
+                    <td>年龄</td>
+                    <td id="age"></td>
+                </tr>
+                <tr>
+                    <td>部门</td>
+                    <td id="dept"></td>
+                </tr>
+                <tr>
+                    <td>入职时间</td>
+                    <td id="entrydate"></td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- 模态框结构 -->
+        <div id="editModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <form id="editPersonalInfoForm">
+                    <label for="id">工号:</label>
+                    <input type="text" id="editId" name="id" readonly><br><br>
+                    <label for="name">姓名:</label>
+                    <input type="text" id="editName" name="name"><br><br>
+                    <label for="username">用户名:</label>
+                    <input type="text" id="editUsername" name="username" readonly><br><br>
+                    <label for="gender">性别:</label>
+                    <input type="text" id="editGender" name="gender"><br><br>
+                    <label for="age">年龄:</label>
+                    <input type="number" id="editAge" name="age"><br><br>
+                    <label for="editDept">部门:</label>
+                    <input type="text" id="editDept" name="dept" readonly>
+                    <label for="entrydate">入职时间:</label>
+                    <input type="date" id="editEntrydate" name="entrydate" readonly><br><br>
+                    <button type="button" onclick="submitEditPersonalInfo()">保存</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('authToken');
+    /*jwt令牌检验*/
+    function checkToken() {
+        if (!token) {
+            alert('您未登录或已退出登录，请重新登录');
+            window.location.href = '登录.html'; // 重定向到登录页面
+        }
+    }
+
+    /*退出登录*/
+    function logout() {
+        if (confirm('您确定要退出登录吗？')) {
+            localStorage.removeItem('authToken'); // 清除 localStorage 中的 authToken
+            alert('退出成功');
+            window.location.href = '登录.html'; // 重定向到登录页面
+        }
+    }
+
+    window.onload = function() {
+        checkToken(); // 检查 token
+    }
+
+    function viewPersonalInfo() {
+        fetchData().then(staff => {
+            document.getElementById('id').textContent = staff.id;
+            document.getElementById('name').textContent = staff.name;
+            document.getElementById('username').textContent = staff.username;
+            document.getElementById('gender').textContent = staff.gender === 1 ? '男' : '女';
+            document.getElementById('age').textContent = staff.age;
+            document.getElementById('dept').textContent = getDeptName(staff.dept); // 修改这里，使用getDeptName方法获取部门名称
+            document.getElementById('entrydate').textContent = staff.entrydate;
+            document.getElementById('personalInfoTable').style.display = 'table';
+        });
+    }
+
+    /* 获取部门名称 */
+    function getDeptName(dept) {
+        switch (dept) {
+            case 1:
+                return "行政部";
+            case 2:
+                return "财务部";
+            case 3:
+                return "市场部";
+            case 4:
+                return "销售部";
+            case 5:
+                return "研发部";
+            case 6:
+                return "生产部";
+            case 7:
+                return "客服部";
+            default:
+                return "-";
+        }
+    }
+
+    function editPersonalInfo() {
+        fetchData().then(staff => {
+            document.getElementById('editId').value = staff.id;
+            document.getElementById('editName').value = staff.name;
+            document.getElementById('editUsername').value = staff.username;
+            document.getElementById('editGender').value = staff.gender === 1 ? '男' : '女';
+            document.getElementById('editAge').value = staff.age;
+            document.getElementById('editDept').value = staff.dept; // 直接赋值部门ID
+            document.getElementById('editEntrydate').value = staff.entrydate;
+            document.getElementById('editModal').style.display = 'block';
+        });
+    }
+
+    function submitEditPersonalInfo() {
+        const staff = {
+            id: parseInt(localStorage.getItem('staffId')), // 确保传递id
+            name: document.getElementById('editName').value,
+            username: document.getElementById('editUsername').value,
+            gender: document.getElementById('editGender').value === '男' ? 1 : 0,
+            age: parseInt(document.getElementById('editAge').value),
+        };
+
+        fetch('http://localhost:8080/staff', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(staff)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('个人信息修改成功');
+            closeModal();
+            viewPersonalInfo();
+        })
+        .catch(error => {
+            console.error('修改个人信息失败:', error);
+            alert('修改个人信息失败，请稍后再试');
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    function fetchData() {
+        return fetch('http://localhost:8080/staff', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            return data.data;
+        })
+        .catch(error => {
+            console.error('获取个人信息失败:', error);
+            alert('获取个人信息失败，请稍后再试');
+        });
+    }
+</script>
+</body>
+</html>

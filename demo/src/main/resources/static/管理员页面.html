@@ -1,0 +1,859 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员页面</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<!-- 添加搜索框 -->
+<div>
+    <label for="nameFilter">姓名:</label>
+    <input type="text" id="nameFilter">
+    <label for="genderFilter">性别:</label>
+    <select id="genderFilter">
+        <option value="">不限</option>
+        <option value="1">男</option>
+        <option value="0">女</option>
+    </select>
+    <label for="entryDateStart">入职时间从:</label>
+    <input type="date" id="entryDateStart">
+    <label for="entryDateEnd">到:</label>
+    <input type="date" id="entryDateEnd">
+    <button onclick="applyFilters()">搜索</button>
+    <div style="margin-left: 50px; display: inline-block;">
+        <button onclick="deleteStaffs()">批量删除</button>
+    </div>
+    <div style="margin-left: 10px; display: inline-block;">
+            <button onclick="addStaff()">新增员工</button>
+    </div>
+
+
+</div>
+
+
+<table id="staffTable" style="margin-top: 20px;">
+    <thead>
+    <tr>
+        <th>
+            <label for="selectAll">全选</label>
+            <input type="checkbox" id="selectAll">
+        </th>
+        <th>ID</th>
+        <th>姓名</th>
+        <th>性别</th>
+        <th>年龄</th>
+        <th>部门</th>
+        <th>入职时间</th>
+        <th>创建时间</th>
+        <th>修改时间</th>
+        <th>已离职</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+<div style="margin-top: 20px;margin-left: 500px; display: inline-block;">
+<button id="prevPageButton" onclick="prevPage()">上一页</button>
+    <span id="pageInfo">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+<button id="nextPageButton" onclick="nextPage()">下一页</button>
+
+</div>
+<div style="margin-top: 20px; font-size: 30px; display: flex; gap: 20px;">
+    <button onclick="checkActivities()">查看活动</button>
+    <button onclick="checkAbsence()">查看请假申请</button>
+    <button onclick="checkLeave()">查看离职申请</button>
+    <button onclick="logout()">退出登录</button>
+</div>
+
+<!-- 活动信息模态框 -->
+<div id="activitiesModal" class="modal">
+    <div class="modal-content">
+        <span id="actclose" class="close" onclick="document.getElementById('activitiesModal').style.display='none;'">&times;</span>
+        <h2>活动信息</h2>
+        <table id="activitiesTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>活动名称</th>
+                    <th>详情</th>
+                    <th>总成员数</th>
+                    <th>是否结束</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 活动数据将插入到这里 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!--编辑员工信息模态框 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span id="editclose" class="close" onclick="document.getElementById('editModal').style.display='none;'">&times;</span>
+        <h2>编辑员工信息</h2>
+        <form id="editForm">
+            <label for="editId">ID:</label>
+            <input type="text" id="editId" name="id" readonly><br> <!-- 设置为只读 -->
+            <label for="editName">姓名:</label>
+            <input type="text" id="editName" name="name"><br>
+            <label for="editGender">性别:</label>
+            <select id="editGender" name="gender">
+                <option value="1">男</option>
+                <option value="0">女</option>
+            </select><br>
+            <label for="editAge">年龄:</label>
+            <input type="number" id="editAge" name="age"><br>
+            <label for="editDept">部门:</label>
+            <select id="editDept" name="dept">
+                <option value="1">行政部</option>
+                <option value="2">财务部</option>
+                <option value="3">市场部</option>
+                <option value="4">销售部</option>
+                <option value="5">研发部</option>
+                <option value="6">生产部</option>
+                <option value="7">客服部</option>
+            </select><br>
+            <label for="editEntrydate">入职时间:</label>
+            <input type="date" id="editEntrydate" name="entrydate" ><br>
+            <label for="editCreateTime">创建时间:</label>
+            <input type="datetime-local" id="editCreateTime" name="createTime" readonly><br>
+            <label for="editUpdateTime">修改时间:</label>
+            <input type="datetime-local" id="editUpdateTime" name="updateTime" readonly><br>
+            <button type="button" onclick="updateStaff()">保存</button>
+        </form>
+    </div>
+</div>
+
+<!-- 新增员工模态框 -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <span id="addclose" class="close">&times;</span>
+        <h2>新增员工信息</h2>
+        <form id="addForm">
+            <label for="addName">姓名:</label>
+            <input type="text" id="addName" name="name"><br>
+            <label for="addUsername">用户名:</label>
+            <input type="text" id="addUsername" name="username"><br>
+            <label for="addGender">性别:</label>
+            <select id="addGender" name="gender">
+                <option value="1">男</option>
+                <option value="0">女</option>
+            </select><br>
+            <label for="addAge">年龄:</label>
+            <input type="number" id="addAge" name="age"><br>
+            <label for="addDept">部门:</label>
+            <select id="addDept" name="dept">
+                <option value="1">行政部</option>
+                <option value="2">财务部</option>
+                <option value="3">市场部</option>
+                <option value="4">销售部</option>
+                <option value="5">研发部</option>
+                <option value="6">生产部</option>
+                <option value="7">客服部</option>
+            </select><br>
+            <label for="addEntrydate">入职时间:</label>
+            <input type="date" id="addEntrydate" name="entrydate" ><br>
+            <button type="button" onclick="saveStaff()">保存</button>
+        </form>
+    </div>
+</div>
+
+<!-- 请假申请模态框 -->
+<div id="absenceModal" class="modal">
+    <div class="modal-content">
+        <span id="absenceclose" class="close" onclick="document.getElementById('absenceModal').style.display='none;'">&times;</span>
+        <h2>请假申请信息</h2>
+        <table id="salaryTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                    <th>类型及原因</th>
+                    <th>开始时间</th>
+                    <th>结束时间</th>
+                    <th>是否通过</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 请假申请数据将插入到这里 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 离职申请模态框 -->
+<div id="leaveModal" class="modal">
+    <div class="modal-content">
+        <span id="leaveclose" class="close" onclick="document.getElementById('leaveModal').style.display='none;'">&times;</span>
+        <h2>离职申请信息</h2>
+        <table id="leaveTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                    <th>原因</th>
+                    <th>是否通过</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 离职申请数据将插入到这里 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!--身份验证和数据获取-->
+<script>
+    let currentPage = 1;
+    const token = localStorage.getItem('authToken');
+    /*jwt令牌检验*/
+    function checkToken() {
+        if (!token) {
+            alert('您未登录或已退出登录，请重新登录');
+            window.location.href = '登录.html'; // 重定向到登录页面
+        }
+    }
+
+    /*新增员工*/
+    function addStaff() {
+        const modal = document.getElementById("addModal");
+        modal.style.display = "block";
+
+        // 获取关闭按钮和模态框元素
+        const closeModalButton = document.getElementById("addclose");
+
+        // 添加点击事件监听器
+        closeModalButton.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+    }
+    function saveStaff() {
+        const name = document.getElementById('addName').value;
+        const username = document.getElementById('addUsername').value;
+        const gender = document.getElementById('addGender').value;
+        const age = document.getElementById('addAge').value;
+        const dept = document.getElementById('addDept').value;
+        const entrydate = document.getElementById('addEntrydate').value;
+
+        const staff = {
+            name: name,
+            username: username,
+            gender: parseInt(gender),
+            age: parseInt(age),
+            dept: parseInt(dept),
+            entrydate: entrydate
+        };
+
+        fetch('http://localhost:8080/manager/staffs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(staff)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                alert('新增成功');
+                document.getElementById("addModal").style.display = "none";
+                fetchData(currentPage); // 重新加载数据
+            })
+            .catch(error => {
+                console.error('新增失败:', error);
+                alert('新增失败，请稍后再试');
+            });
+    }
+
+    /*分页条件查询*/
+    function fetchData(page = currentPage, pageSize = 5, name = '', gender = '', begin = '', end = '') {
+        const url = new URL('http://localhost:8080/manager/staffs');
+        url.searchParams.append('page', page);
+        url.searchParams.append('pageSize', pageSize);
+        if (name) url.searchParams.append('name', name);
+        if (gender) url.searchParams.append('gender', gender);
+        if (begin) url.searchParams.append('begin', begin);
+        if (end) url.searchParams.append('end', end);
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const staffs = data.data.content; // 修改: 从 data.data.content 中获取员工列表
+                const totalPages = Math.ceil(data.data.total / pageSize); // 修改: 计算总页数
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('currentPage').textContent = page; // 添加: 更新当前页码
+                const tableBody = document.querySelector("#staffTable tbody");
+                tableBody.innerHTML = "";
+
+                staffs.forEach(staff => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="rowCheckbox"></td>
+                        <td>${staff.id}</td>
+                        <td>${staff.name}</td>
+                        <td>${staff.gender === 1 ? '男' : '女'}</td>
+                        <td>${staff.age}</td>
+                        <td>${getDeptName(staff.dept)}</td>
+                        <td>${staff.entrydate}</td>
+                        <td>${staff.createTime}</td>
+                        <td>${staff.updateTime}</td>
+                        <td>${staff.is_deleted ? '是' : '否'}</td>
+                        <td>
+                            <button onclick="editStaff(${staff.id})">修改</button>
+                            <button onclick="deleteStaff(${staff.id})">删除</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                updatePaginationButtons(totalPages); // 修改: 传递 totalPages 参数
+            })
+            .catch(error => {
+                console.error('数据获取失败:', error);
+                alert('数据获取失败，请稍后再试');
+                window.location.href = '登录.html';
+            });
+    }
+
+    /* 获取部门名称 */
+    function getDeptName(deptId) {
+        switch (deptId) {
+            case 1:
+                return "行政部";
+            case 2:
+                return "财务部";
+            case 3:
+                return "市场部";
+            case 4:
+                return "销售部";
+            case 5:
+                return "研发部";
+            case 6:
+                return "生产部";
+            case 7:
+                return "客服部";
+            default:
+                return "-";
+        }
+    }
+
+    /*获取信息*/
+    function editStaff(id) {
+        const modal = document.getElementById("editModal");
+        modal.style.display = "block";
+
+        // 获取关闭按钮和模态框元素
+        const closeModalButton = document.getElementById("editclose");
+
+        // 添加点击事件监听器
+        closeModalButton.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+
+        // 获取员工信息
+        fetch(`http://localhost:8080/manager/staffs/${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const staff = data.data;
+                document.getElementById('editId').value = staff.id;
+                document.getElementById('editName').value = staff.name;
+                document.getElementById('editGender').value = staff.gender;
+                document.getElementById('editAge').value = staff.age;
+                document.getElementById('editDept').value = staff.dept;
+                document.getElementById('editEntrydate').value = staff.entrydate; // 修正变量名错误
+                document.getElementById('editCreateTime').value = staff.createTime;
+                document.getElementById('editUpdateTime').value = staff.updateTime;
+            })
+            .catch(error => {
+                console.error('获取员工信息失败:', error);
+                alert('获取员工信息失败，请稍后再试');
+            });
+    }
+
+    /*修改信息*/
+    function updateStaff() {
+        const id = document.getElementById('editId').value;
+        const name = document.getElementById('editName').value;
+        const gender = document.getElementById('editGender').value;
+        const age = document.getElementById('editAge').value;
+        const dept = document.getElementById('editDept').value;
+        const entrydate = document.getElementById('editEntrydate').value;
+
+        const staff = {
+            id: parseInt(id),
+            name: name,
+            gender: parseInt(gender),
+            age: parseInt(age),
+            dept: dept,
+            entrydate: entrydate
+        };
+
+        fetch(`http://localhost:8080/manager/staffs`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(staff)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                alert('更新成功');
+                document.getElementById("editModal").style.display = "none";
+                fetchData(currentPage); /*// 重新加载数据*/
+            })
+            .catch(error => {
+                console.error('更新失败:', error);
+                alert('更新失败，请稍后再试');
+            });
+    }
+
+    /*删除员工（单删）*/
+    function deleteStaff(id) {
+        if (confirm('确定要删除ID为: ' + id + '的员工吗？')) {
+            fetch(`http://localhost:8080/manager/staffs/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    alert('删除成功');
+                    fetchData(currentPage); // 重新加载数据
+                })
+                .catch(error => {
+                    console.error('删除失败:', error);
+                    alert('删除失败，请稍后再试');
+                });
+        }
+    }
+
+    /*批量删除*/
+    function deleteStaffs() {
+        // 获取所有被选中的复选框
+        const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+        const ids = Array.from(checkboxes).map(checkbox => checkbox.parentNode.nextElementSibling.textContent);
+
+        if (ids.length === 0) {
+            alert('请先选择要删除的员工');
+            return;
+        }
+
+        if (confirm('确定要删除选中的员工吗？')) {
+            fetch(`http://localhost:8080/manager/staffs/${ids}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(ids)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    alert('删除成功');
+                    fetchData(currentPage); // 重新加载数据
+                })
+                .catch(error => {
+                    console.error('删除失败:', error);
+                    alert('删除失败，请稍后再试');
+                });
+        }
+    }
+
+    /*上一页*/
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchData(currentPage);
+        }
+    }
+
+    /*下一页*/
+    function nextPage() {
+        currentPage++;
+        fetchData(currentPage);
+    }
+
+    /*搜索员工*/
+    function applyFilters() {
+        currentPage = 1; /*// 重置页码为第一页*/
+        const name = document.getElementById('nameFilter').value.trim();
+        const gender = document.getElementById('genderFilter').value;
+        const entryDateStart = document.getElementById('entryDateStart').value;
+        const entryDateEnd = document.getElementById('entryDateEnd').value;
+
+        /*// 检查是否所有条件都为空*/
+        if (!name && !gender && !entryDateStart && !entryDateEnd) {
+            fetchData(currentPage, 5); /*// 不传递条件参数*/
+        } else {
+            fetchData(currentPage, 5, name, gender, entryDateStart, entryDateEnd);
+        }
+    }
+
+    /*翻页*/
+    function updatePaginationButtons(totalPages) { // 修改: 添加 totalPages 参数
+        const prevButton = document.getElementById('prevPageButton');
+        const nextButton = document.getElementById('nextPageButton');
+
+        if (currentPage <= 1) {
+            prevButton.disabled = true;
+        } else {
+            prevButton.disabled = false;
+        }
+
+        if (currentPage >= totalPages) {
+            nextButton.disabled = true;
+        } else {
+            nextButton.disabled = false;
+        }
+    }
+
+    /*查询活动*/
+    function checkActivities(){
+        fetch(`http://localhost:8080/manager/staffs/activity`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const activities = data.data;
+                const tableBody = document.querySelector("#activitiesTable tbody");
+                tableBody.innerHTML = ""; // 清空现有数据
+
+                activities.forEach(activity => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${activity.id}</td>
+                        <td>${activity.activities}</td>
+                        <td>${activity.details}</td>
+                        <td>${activity.totalMember}</td>
+                        <td>${activity.isEnded ? '是' : '否'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // 显示模态框
+                document.getElementById("activitiesModal").style.display = "block";
+
+                // 获取关闭按钮和模态框元素
+                const closeModalButton = document.getElementById("actclose");
+                const modal = document.getElementById("activitiesModal");
+
+                // 添加点击事件监听器
+                closeModalButton.addEventListener("click", function() {
+                    modal.style.display = "none";
+                });
+            })
+            .catch(error => {
+                console.error('查询活动失败:', error);
+                alert('查询活动失败，请稍后再试');
+            })
+    }
+
+    /*查看请假申请*/
+    function checkAbsence() {
+        fetch('http://localhost:8080/manager/staffs/apply', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const applies = data.data;
+            const tableBody = document.querySelector("#salaryTable tbody");
+            tableBody.innerHTML = ""; // 清空现有数据
+
+            applies.forEach(apply => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${apply.staffId}</td>
+                    <td>${apply.name}</td>
+                    <td>${apply.type}</td>
+                    <td>${apply.startTime}</td>
+                    <td>${apply.endTime}</td>
+                    <td>
+                        <button onclick="approveAbsence(${apply.staffId})">同意</button>
+                        <button onclick="rejectAbsence(${apply.staffId})">拒绝</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // 显示模态框
+            document.getElementById("absenceModal").style.display = "block";
+
+            // 获取关闭按钮和模态框元素
+            const closeModalButton = document.getElementById("absenceclose");
+            const modal = document.getElementById("absenceModal");
+
+            // 添加点击事件监听器
+            closeModalButton.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+        })
+        .catch(error => {
+            console.error('查询请假申请失败:', error);
+            alert('查询请假申请失败，请稍后再试');
+        });
+    }
+
+    /*同意请假申请*/
+    function approveAbsence(staffId) {
+        if (confirm('确定要同意ID为: ' + staffId + '的员工的请假申请吗？')) {
+            fetch(`http://localhost:8080/manager/staffs/apply/${staffId}/yes`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                alert('同意成功');
+                checkAbsence(); // 重新加载请假申请数据
+            })
+            .catch(error => {
+                console.error('同意失败:', error);
+                alert('同意失败，请稍后再试');
+            });
+        }
+    }
+
+    /*拒绝请假申请*/
+    function rejectAbsence(staffId) {
+        if (confirm('确定要拒绝ID为: ' + staffId + '的员工的请假申请吗？')) {
+            fetch(`http://localhost:8080/manager/staffs/apply/${staffId}/no`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                alert('拒绝成功');
+                checkAbsence(); // 重新加载请假申请数据
+            })
+            .catch(error => {
+                console.error('拒绝失败:', error);
+                alert('拒绝失败，请稍后再试');
+            });
+        }
+    }
+
+    /*查看离职申请*/
+    function checkLeave() {
+        fetch('http://localhost:8080/manager/staffs/applyto', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const leaves = data.data;
+            const tableBody = document.querySelector("#leaveTable tbody");
+            tableBody.innerHTML = ""; // 清空现有数据
+
+            leaves.forEach(leave => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${leave.staffId}</td>
+                    <td>${leave.name}</td>
+                    <td>${leave.reason}</td>
+                    <td>
+                        <button onclick="approveLeave(${leave.staffId})">同意</button>
+                        <button onclick="rejectLeave(${leave.staffId})">拒绝</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // 显示模态框
+            document.getElementById("leaveModal").style.display = "block";
+
+            // 获取关闭按钮和模态框元素
+            const closeModalButton = document.getElementById("leaveclose");
+            const modal = document.getElementById("leaveModal");
+
+            // 添加点击事件监听器
+            closeModalButton.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+        })
+        .catch(error => {
+            console.error('查询离职申请失败:', error);
+            alert('查询离职申请失败，请稍后再试');
+        });
+    }
+
+    /*同意离职申请*/
+    function approveLeave(staffId) {
+        if (confirm('确定要同意ID为: ' + staffId + '的员工的离职申请吗？')) {
+            fetch(`http://localhost:8080/manager/staffs/applyto/${staffId}/y`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    alert('同意成功');
+                    checkLeave(); // 重新加载离职申请数据
+                })
+                .catch(error => {
+                    console.error('同意失败:', error);
+                    alert('同意失败，请稍后再试');
+                });
+        }
+    }
+
+        /*拒绝离职申请*/
+        function rejectLeave(staffId) {
+            if (confirm('确定要拒绝ID为: ' + staffId + '的员工的离职申请吗？')) {
+                fetch(`http://localhost:8080/manager/staffs/applyto/${staffId}/n`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        alert('拒绝成功');
+                        checkLeave(); // 重新加载离职申请数据
+                    })
+                    .catch(error => {
+                        console.error('拒绝失败:', error);
+                        alert('拒绝失败，请稍后再试');
+                    });
+            }
+        }
+
+    /*全选复选框*/
+    document.getElementById("selectAll").addEventListener("change", function() {
+        const checkboxes = document.querySelectorAll(".rowCheckbox");
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    /*退出登录*/
+    function logout() {
+        if (confirm('您确定要退出登录吗？')) {
+            localStorage.removeItem('authToken'); // 清除 localStorage 中的 authToken
+            alert('退出成功');
+            window.location.href = '登录.html'; // 重定向到登录页面
+        }
+    }
+
+    window.onload = function() {
+        checkToken(); // 检查 token
+        fetchData(currentPage);
+    }
+
+</script>
+</body>
+</html>

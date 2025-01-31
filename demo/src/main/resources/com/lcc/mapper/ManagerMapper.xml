@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lcc.mapper.ManagerMapper">
+    <!--条件查询-->
+   <select id="list" resultType="com.lcc.pojo.staffs">
+        select *
+        from staff
+        <where>
+            <if test="name != null and name != ''">
+                 name like concat('%',#{name},'%')
+            </if>
+            <if test="gender != null">
+                and gender = #{gender}
+            </if>
+            <if test="begin != null and end !=null">
+                and entrydate between #{begin} and #{end}
+            </if>
+        and is_deleted = false
+        </where>
+        order by update_time desc
+   </select>
+
+    <!--将中间表的id作为标识，最后来设置对应分数-->
+    <select id="getPaticipantsById" resultType="com.lcc.pojo.Staff">
+        select sa.id, s.name
+        from staff s
+        join staff_activities sa
+        on sa.staff_id = s.id
+        where activity_id = #{id}
+        order by sa.id
+    </select>
+
+    <update id="delete">
+        update staff
+        set is_deleted =true
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="update">
+        update staff
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="dept != null and dept != ''">
+                dept = #{dept},
+            </if>
+            <if test="entrydate != null and entrydate != ''">
+                entrydate = #{entrydate},
+            </if>
+        </set>
+        where staff.id = #{id}
+    </update>
+    
+    <update id="updateActivity">
+        update activity
+        <set>
+            <if test="activities != null and activities != ''">
+                activities = #{activities},
+            </if>
+            <if test="details != null and details != ''">
+                details = #{details},
+            </if>
+            <if test="totalMember != null">
+                total_member = #{totalMember},
+            </if>
+        </set>
+        where activity.id = #{id}
+    </update>
+
+    <insert id="setScore">
+        insert into score(score)
+        values(#{score})
+    </insert>
+    
+</mapper>
