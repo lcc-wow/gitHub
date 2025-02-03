@@ -37,14 +37,6 @@ public class StaffServiceImpl implements StaffService {
     //修改个人信息
     @Override
     public void update(Staff staff) {
-        // 先查询数据库中的原始记录
-        Staff existingStaff = staffMapper.getById(staff.getId());
-        if (existingStaff != null) {
-            staff.setDept(existingStaff.getDept());
-            staff.setCreateTime(existingStaff.getCreateTime());
-            staff.setEntrydate(existingStaff.getEntrydate());
-            staff.setUpdateTime(LocalDateTime.now());
-        }
         staffMapper.update(staff);
     }
 
@@ -96,8 +88,8 @@ public class StaffServiceImpl implements StaffService {
 
     //查询请假申请
     @Override
-    public List<Apply> getApply() {
-        return staffMapper.getApply();
+    public List<Apply> getApply(Integer id) {
+        return staffMapper.getApply(id);
     }
 
     //查询离职申请

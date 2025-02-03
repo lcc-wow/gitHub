@@ -35,7 +35,7 @@ public interface ManagerMapper {
     List<staffs> list(String name, Short gender, LocalDate begin, LocalDate end);
 
     //记录员工考勤
-    @Insert("insert into condition(staff_id,name,condition,date,punish)"+
+    @Insert("insert into `condition`(staff_id,name,`condition`,date,punish)"+
             "values (#{staffId},#{name},#{condition},#{date},#{punish})")
     void record(Condition condition);
 

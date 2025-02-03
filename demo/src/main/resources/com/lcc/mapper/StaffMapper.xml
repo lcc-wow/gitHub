@@ -10,23 +10,11 @@
             <if test="username != null and username != ''">
                 username = #{username},
             </if>
+            <if test="avatar != null and avatar != ''">
+                avatar = #{avatar},
+            </if>
             <if test="password != null and password != ''">
                 password = #{password},
-            </if>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="gender != null">
-                gender = #{gender},
-            </if>
-            <if test="age != null">
-                age = #{age},
-            </if>
-            <if test="dept != null and dept != ''">
-                dept = #{dept},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
             </if>
         </set>
         where id = #{id}

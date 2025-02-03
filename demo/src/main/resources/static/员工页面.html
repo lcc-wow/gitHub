@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,25 +7,20 @@
         /* 添加样式以分割页面并设置背景颜色 */
         .container {
             display: flex;
+            flex-direction: column;
             height: 100vh;
         }
-        .left-panel {
-            width: 20%;
+        .button-container {
+            display: flex;
+            justify-content: space-around;
             background-color: lightblue;
-            padding: 200px 20px;
-            height: 100%;
-        }
-        .right-panel {
-            width: 80%;
-            background-color: white;
             padding: 20px;
-            height: 100%;
         }
         .button {
             display: block;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             padding: 10px;
-            width: 80%;
+            width: 150px;
             text-align: center;
             background-color: #21657e;
             color: white;
@@ -35,6 +30,13 @@
         }
         .button:hover {
             background-color: #385578;
+        }
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            padding: 20px;
+            height: 100%;
         }
         table {
             width: 100%;
@@ -82,88 +84,179 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #21657e;
+            margin-right: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="left-panel">
+    <div class="button-container">
+        <img id="avatar" class="avatar" src="default-avatar.png" alt="Avatar">
         <!-- 添加按钮 -->
-        <a href="#" class="button" onclick="viewPersonalInfo()">查看个人信息</a>
-        <a href="#" class="button" onclick="editPersonalInfo()">修改个人信息</a>
-        <a href="#" class="button">查看工资情况</a>
-        <a href="#" class="button">查看出勤状态</a>
-        <a href="#" class="button">查询活动信息</a>
-        <a href="#" class="button">请假或离职申请</a>
+        <a href="#" class="button" onclick="fetchData()">查看个人信息</a>
+        <a href="#" class="button" onclick="openEditModal()">修改个人信息</a>
+        <a href="#" class="button" onclick="viewSalary()">查看工资情况</a> <!-- 新增查看工资按钮 -->
+        <a href="#" class="button" onclick="viewAttendance()">查看出勤状态</a> <!-- 新增查看出勤状态按钮 -->
+        <a href="#" class="button" onclick="viewActivities()">查看活动信息</a> <!-- 修改查看活动信息按钮的 onclick 事件 -->
+        <a href="#" class="button" onclick="openApplyTypeModal()">请假或离职申请</a>
         <a href="#" class="button" onclick="logout()">退出登录</a>
     </div>
-    <div class="right-panel">
-        <table id="personalInfoTable" style="display: none;">
+    <div class="content-container">
+        <table id="personalTable" style="margin-top: 20px;">
             <thead>
-                <tr>
-                    <th>属性</th>
-                    <th>内容</th>
-                </tr>
+            <tr>
+                <th>ID</th>
+                <th>姓名</th>
+                <th>用户名</th>
+                <th>性别</th>
+                <th>年龄</th>
+                <th>部门</th>
+                <th>入职时间</th>
+            </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>工号</td>
-                    <td id="id"></td>
-                </tr>
-                <tr>
-                    <td>姓名</td>
-                    <td id="name"></td>
-                </tr>
-                <tr>
-                    <td>用户名</td>
-                    <td id="username"></td>
-                </tr>
-                <tr>
-                    <td>性别</td>
-                    <td id="gender"></td>
-                </tr>
-                <tr>
-                    <td>年龄</td>
-                    <td id="age"></td>
-                </tr>
-                <tr>
-                    <td>部门</td>
-                    <td id="dept"></td>
-                </tr>
-                <tr>
-                    <td>入职时间</td>
-                    <td id="entrydate"></td>
-                </tr>
+
+            </tbody>
+        </table>
+        <table id="salaryTable" style="display: none;">
+            <thead>
+            <tr>
+                <th>日期</th>
+                <th>基本工资</th>
+                <th>全勤</th>
+                <th>提成</th>
+                <th>迟到</th>
+                <th>早退</th>
+                <th>缺勤</th>
+                <th>总工资</th>
+            </tr>
+            </thead>
+            <tbody id="salaryTableBody">
+            </tbody>
+        </table>
+        <!-- 新增出勤信息表格 -->
+        <table id="attendanceTable" style="display: none;">
+            <thead>
+            <tr>
+                <th>日期</th>
+                <th>出勤状态</th>
+                <th>罚款</th>
+            </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+            </tbody>
+        </table>
+        <!-- 新增活动信息表格 -->
+        <table id="activityTable" style="display: none;">
+            <thead>
+            <tr>
+                <th>活动名称</th>
+                <th>活动详情</th>
+                <th>活动人数</th>
+                <th>活动是否结束</th>
+            </tr>
+            </thead>
+            <tbody id="activityTableBody">
             </tbody>
         </table>
         <!-- 模态框结构 -->
-        <div id="editModal" class="modal" style="display: none;">
+        <div id="editModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <form id="editPersonalInfoForm">
-                    <label for="id">工号:</label>
-                    <input type="text" id="editId" name="id" readonly><br><br>
-                    <label for="name">姓名:</label>
-                    <input type="text" id="editName" name="name"><br><br>
-                    <label for="username">用户名:</label>
-                    <input type="text" id="editUsername" name="username" readonly><br><br>
-                    <label for="gender">性别:</label>
-                    <input type="text" id="editGender" name="gender"><br><br>
-                    <label for="age">年龄:</label>
-                    <input type="number" id="editAge" name="age"><br><br>
-                    <label for="editDept">部门:</label>
-                    <input type="text" id="editDept" name="dept" readonly>
-                    <label for="entrydate">入职时间:</label>
-                    <input type="date" id="editEntrydate" name="entrydate" readonly><br><br>
-                    <button type="button" onclick="submitEditPersonalInfo()">保存</button>
+                <span class="close" id="editclose">&times;</span>
+                <h2>编辑员工信息</h2>
+                <form id="editForm">
+                    <label for="editImage">头像:</label>
+                    <input type="file" id="editImage" name="image" onchange="previewImage(event)"><br>
+                    <img id="preview" class="avatar" src="default-avatar.png" alt="Avatar Preview"><br>
+                    <label for="editId">ID:</label>
+                    <input type="text" id="editId" name="id" readonly><br> <!-- 设置为只读 -->
+                    <label for="editUsername">用户名:</label>
+                    <input type="text" id="editUsername" name="username"><br>
+                    <button type="button" onclick="resetPassword()">重置密码</button>
+                    <button type="button" onclick="updateStaff()">保存</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<!-- 新增选择申请类型的模态框 -->
+<div id="applyTypeModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="actclose">&times;</span>
+        <h2>选择申请类型</h2>
+        <button type="button" onclick="openLeaveModal()">请假申请</button>
+        <button type="button" onclick="openResignationModal()">离职申请</button>
+    </div>
+</div>
+
+<!-- 新增请假申请的模态框 -->
+<div id="leaveModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="leaveclose">&times;</span>
+        <h2>请假申请</h2>
+        <form id="leaveForm">
+            <label for="leaveReason">请假原因:</label>
+            <input type="text" id="leaveReason" name="reason"><br>
+            <label for="leaveStart">开始日期:</label>
+            <input type="date" id="leaveStart" name="startTime"><br>
+            <label for="leaveEnd">结束日期:</label>
+            <input type="date" id="leaveEnd" name="endTime"><br>
+            <button type="button" onclick="submitLeave()">提交</button>
+        </form>
+        <table id="leaveTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>工号</th>
+                    <th>姓名</th>
+                    <th>请假原因</th>
+                    <th>开始日期</th>
+                    <th>结束日期</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="leaveTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 新增离职申请的模态框 -->
+<div id="resignationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="resignationclose">&times;</span>
+        <h2>离职申请</h2>
+        <form id="resignationForm">
+            <label for="resignationReason">离职原因:</label>
+            <input type="text" id="resignationReason" name="reason"><br>
+            <label for="resignationDate">离职日期:</label>
+            <input type="date" id="resignationDate" name="date"><br>
+            <button type="button" onclick="submitResignation()">提交</button>
+        </form>
+        <table id="resignationTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>离职原因</th>
+                    <th>离职日期</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="resignationTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>
     const token = localStorage.getItem('authToken');
-    /*jwt令牌检验*/
+
+    /* JWT令牌检验 */
     function checkToken() {
         if (!token) {
             alert('您未登录或已退出登录，请重新登录');
@@ -171,7 +264,7 @@
         }
     }
 
-    /*退出登录*/
+    /* 退出登录 */
     function logout() {
         if (confirm('您确定要退出登录吗？')) {
             localStorage.removeItem('authToken'); // 清除 localStorage 中的 authToken
@@ -182,19 +275,157 @@
 
     window.onload = function() {
         checkToken(); // 检查 token
+        fetchData();
     }
 
-    function viewPersonalInfo() {
-        fetchData().then(staff => {
-            document.getElementById('id').textContent = staff.id;
-            document.getElementById('name').textContent = staff.name;
-            document.getElementById('username').textContent = staff.username;
-            document.getElementById('gender').textContent = staff.gender === 1 ? '男' : '女';
-            document.getElementById('age').textContent = staff.age;
-            document.getElementById('dept').textContent = getDeptName(staff.dept); // 修改这里，使用getDeptName方法获取部门名称
-            document.getElementById('entrydate').textContent = staff.entrydate;
-            document.getElementById('personalInfoTable').style.display = 'table';
-        });
+    function fetchData() {
+        fetch(`http://localhost:8080/staff`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const staff = data.data;
+                const tableBody = document.getElementById('personalTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // 清空表格内容
+
+                // 添加个人信息到表格
+                const row = tableBody.insertRow(); // 创建一行
+                const attributes = [
+                    { label: 'ID', key: 'id' },
+                    { label: '姓名', key: 'name' },
+                    { label: '用户名', key: 'username' },
+                    { label: '性别', key: 'gender' },
+                    { label: '年龄', key: 'age' },
+                    { label: '部门', key: 'dept' },
+                    { label: '入职时间', key: 'entrydate' }
+                ];
+
+                attributes.forEach(attr => {
+                    const cell = row.insertCell(); // 在行中插入单元格
+                    if (attr.key === 'gender') {
+                        cell.textContent = staff[attr.key] === 1 ? '男' : '女';
+                    } else if (attr.key === 'dept') {
+                        cell.textContent = getDeptName(staff[attr.key]); // 修改这里以显示部门名称
+                    } else if (attr.key === 'entrydate') {
+                        const date = new Date(staff[attr.key]);
+                        cell.textContent = date.toLocaleDateString(); // 格式化日期
+                    } else {
+                        cell.textContent = staff[attr.key];
+                    }
+                });
+
+                document.getElementById('personalTable').style.display = 'table'; // 显示个人信息表格
+                document.getElementById('salaryTable').style.display = 'none'; // 隐藏工资表格
+                document.getElementById('attendanceTable').style.display = 'none'; // 隐藏出勤表格
+                document.getElementById('activityTable').style.display = 'none'; // 隐藏活动表格
+            })
+            .catch(error => {
+                console.error('获取个人信息失败:', error);
+                alert('获取个人信息失败，请登录或稍后再试');
+                window.location.href = '登录.html';
+            });
+    }
+
+    function viewSalary() {
+        fetch('http://localhost:8080/staff/salary', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const salaries = data.data;
+                const tableBody = document.getElementById('salaryTableBody');
+                tableBody.innerHTML = ''; // 清空表格内容
+
+                // 添加工资信息到表格
+                salaries.forEach(salary => {
+                    const row = tableBody.insertRow(); // 创建一行
+                    const attributes = [
+                        { label: '日期', key: 'date' },
+                        { label: '基本工资', key: 'basicSalary' },
+                        { label: '奖金', key: 'bonus' },
+                        { label: '提成', key: 'penalty' },
+                        { label: '迟到', key: 'late' },
+                        { label: '早退', key: 'early' },
+                        { label: '缺勤', key: 'absence' },
+                        { label: '总工资', key: 'totalSalary' }
+                    ];
+
+                    attributes.forEach(attr => {
+                        const cell = row.insertCell(); // 在行中插入单元格
+                        cell.textContent = salary[attr.key];
+                    });
+                });
+
+                document.getElementById('personalTable').style.display = 'none'; // 隐藏个人信息表格
+                document.getElementById('salaryTable').style.display = 'table'; // 显示工资表格
+                document.getElementById('attendanceTable').style.display = 'none'; // 隐藏出勤表格
+                document.getElementById('activityTable').style.display = 'none'; // 隐藏活动表格
+            })
+            .catch(error => {
+                console.error('获取工资信息失败:', error);
+                alert('获取工资信息失败，请稍后再试');
+            });
+    }
+
+    // 新增 viewAttendance 函数
+    function viewAttendance() {
+        fetch('http://localhost:8080/staff/condition', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const attendances = data.data;
+                const tableBody = document.getElementById('attendanceTableBody');
+                tableBody.innerHTML = ''; // 清空表格内容
+
+                // 添加出勤信息到表格
+                attendances.forEach(attendance => {
+                    const row = tableBody.insertRow(); // 创建一行
+                    const attributes = [
+                        { label: '日期', key: 'date' },
+                        { label: '出勤状态', key: 'condition' },
+                        { label: '罚款', key: 'punish' }
+                    ];
+
+                    attributes.forEach(attr => {
+                        const cell = row.insertCell(); // 在行中插入单元格
+                        cell.textContent = attendance[attr.key];
+                    });
+                });
+
+                document.getElementById('personalTable').style.display = 'none'; // 隐藏个人信息表格
+                document.getElementById('salaryTable').style.display = 'none'; // 隐藏工资表格
+                document.getElementById('attendanceTable').style.display = 'table'; // 显示出勤表格
+                document.getElementById('activityTable').style.display = 'none'; // 隐藏活动表格
+            })
+            .catch(error => {
+                console.error('获取出勤信息失败:', error);
+                alert('获取出勤信息失败，请稍后再试');
+            });
     }
 
     /* 获取部门名称 */
@@ -219,35 +450,66 @@
         }
     }
 
-    function editPersonalInfo() {
-        fetchData().then(staff => {
-            document.getElementById('editId').value = staff.id;
-            document.getElementById('editName').value = staff.name;
-            document.getElementById('editUsername').value = staff.username;
-            document.getElementById('editGender').value = staff.gender === 1 ? '男' : '女';
-            document.getElementById('editAge').value = staff.age;
-            document.getElementById('editDept').value = staff.dept; // 直接赋值部门ID
-            document.getElementById('editEntrydate').value = staff.entrydate;
-            document.getElementById('editModal').style.display = 'block';
-        });
+    /* 打开编辑模态框 */
+    function openEditModal() {
+        const modal = document.getElementById("editModal");
+        modal.style.display = "block";
+
+        // 获取员工信息
+        fetch('http://localhost:8080/staff', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const staff = data.data;
+                document.getElementById('editId').value = staff.id;
+                document.getElementById('editUsername').value = staff.username;
+                // 更新头像预览
+                document.getElementById('preview').src = staff.avatar || 'default-avatar.png';
+            })
+            .catch(error => {
+                console.error('获取员工信息失败:', error);
+                alert('获取员工信息失败，请稍后再试');
+            });
+
+        document.getElementById("editclose").onclick = function() {
+            closeModal("editModal");
+        };
     }
 
-    function submitEditPersonalInfo() {
-        const staff = {
-            id: parseInt(localStorage.getItem('staffId')), // 确保传递id
-            name: document.getElementById('editName').value,
-            username: document.getElementById('editUsername').value,
-            gender: document.getElementById('editGender').value === '男' ? 1 : 0,
-            age: parseInt(document.getElementById('editAge').value),
-        };
+    /* 关闭模态框 */
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
 
+    function updateStaff() {
+        // 获取表单数据
+        const staffId = document.getElementById('editId').value;
+        const username = document.getElementById('editUsername').value;
+        const avatarFile = document.getElementById('editImage').files[0];
+
+        const formData = new FormData();
+        formData.append('id', staffId);
+        formData.append('username', username);
+        if (avatarFile) {
+            formData.append('image', avatarFile);
+        }
+
+        // 发送PUT请求到后端
         fetch('http://localhost:8080/staff', {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(staff)
+            body: formData
         })
         .then(response => {
             if (!response.ok) {
@@ -256,9 +518,12 @@
             return response.json();
         })
         .then(data => {
+            console.log('修改成功:', data);
             alert('个人信息修改成功');
             closeModal();
-            viewPersonalInfo();
+            fetchData(); // 刷新个人信息
+            // 更新头像展示
+            document.getElementById('avatar').src = data.data.avatar || 'default-avatar.png';
         })
         .catch(error => {
             console.error('修改个人信息失败:', error);
@@ -266,31 +531,320 @@
         });
     }
 
-    function closeModal() {
-        document.getElementById('editModal').style.display = 'none';
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
     }
 
-    function fetchData() {
-        return fetch('http://localhost:8080/staff', {
+    // 新增 viewActivities 函数
+    function viewActivities() {
+        fetch('http://localhost:8080/staff/activity', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            return data.data;
-        })
-        .catch(error => {
-            console.error('获取个人信息失败:', error);
-            alert('获取个人信息失败，请稍后再试');
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const activities = data.data;
+                const tableBody = document.getElementById('activityTableBody');
+                tableBody.innerHTML = ''; // 清空表格内容
+
+                // 添加活动信息到表格
+                activities.forEach(activity => {
+                    const row = tableBody.insertRow(); // 创建一行
+                    const attributes = [
+                        { label: '活动名称', key: 'activities' },
+                        { label: '活动详情', key: 'details' },
+                        { label: '活动人数', key: 'totalMember' },
+                        { label: '活动是否结束', key: 'isEnded'}
+                    ];
+
+                    attributes.forEach(attr => {
+                        const cell = row.insertCell(); // 在行中插入单元格
+                        if (attr.key === 'isEnded') {
+                            cell.textContent = activity[attr.key] ? '已结束' : '未结束';
+                        } else {
+                            cell.textContent = activity[attr.key];
+                        }
+                    });
+
+                });
+
+                document.getElementById('personalTable').style.display = 'none'; // 隐藏个人信息表格
+                document.getElementById('salaryTable').style.display = 'none'; // 隐藏工资表格
+                document.getElementById('attendanceTable').style.display = 'none'; // 隐藏出勤表格
+                document.getElementById('activityTable').style.display = 'table'; // 显示活动表格
+            })
+            .catch(error => {
+                console.error('获取活动信息失败:', error);
+                alert('获取活动信息失败，请稍后再试');
+            });
     }
+
+    // 新增 participateInActivity 函数
+    function participateInActivity(activityId) {
+        fetch(`http://localhost:8080/staff/activities/${activityId}/participate`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('参与活动成功:', data);
+                alert('参与活动成功');
+                viewActivities(); // 刷新活动信息
+            })
+            .catch(error => {
+                console.error('参与活动失败:', error);
+                alert('参与活动失败，请稍后再试');
+            });
+}
+
+    // 新增 viewScore 函数
+    function viewScore(activityId) {
+        fetch(`http://localhost:8080/staff/activities/${activityId}/score`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('查看分数成功:', data);
+                alert('您的分数是: ' + data.score);
+            })
+            .catch(error => {
+                console.error('查看分数失败:', error);
+                alert('查看分数失败，请稍后再试');
+            });
+}
+
+// 新增打开选择申请类型的模态框的函数
+function openApplyTypeModal() {
+    document.getElementById('applyTypeModal').style.display = 'block';
+    fetchLeaveApplications(); // 新增获取请假申请数据
+    fetchResignationApplications(); // 新增获取离职申请数据
+
+    document.getElementById("actclose").onclick = function() {
+        closeModal("applyTypeModal");
+    };
+}
+
+function openLeaveModal() {
+    document.getElementById('applyTypeModal').style.display = 'none';
+    document.getElementById('leaveModal').style.display = 'block';
+    fetchLeaveApplications(); // 新增获取请假申请数据
+
+    document.getElementById("leaveclose").onclick = function() {
+        closeModal("leaveModal");
+    };
+}
+
+function openResignationModal() {
+    document.getElementById('applyTypeModal').style.display = 'none';
+    document.getElementById('resignationModal').style.display = 'block';
+    fetchResignationApplications(); // 新增获取离职申请数据
+
+    document.getElementById("resignationclose").onclick = function() {
+        closeModal("resignationModal");
+    };
+}
+
+function fetchLeaveApplications() {
+    fetch('http://localhost:8080/staff/apply', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const leaves = data.data;
+        const tableBody = document.getElementById('leaveTableBody');
+        tableBody.innerHTML = ''; // 清空表格内容
+
+        // 添加请假申请数据到表格
+        leaves.forEach(leave => {
+            const row = tableBody.insertRow(); // 创建一行
+            const attributes = [
+                { label: '工号', key: 'staffId' },
+                { label: '姓名', key: 'name' },
+                { label: '请假原因', key: 'type' },
+                { label: '开始日期', key: 'startTime' },
+                { label: '结束日期', key: 'endTime' },
+                { label: '状态', key: 'isPassed' } // 假设后端返回状态字段
+            ];
+
+            attributes.forEach(attr => {
+                const cell = row.insertCell(); // 在行中插入单元格
+                if (attr.key === 'isPassed') {
+                    cell.textContent = leave[attr.key] !== null ? (leave[attr.key] ? '未通过' : '已通过') : '未审批';
+                } else {
+                    cell.textContent = leave[attr.key];
+                }
+            });
+        });
+
+        document.getElementById('leaveTable').style.display = 'table'; // 显示请假申请表格
+    })
+    .catch(error => {
+        console.error('获取请假申请数据失败:', error);
+        alert('获取请假申请数据失败，请稍后再试');
+    });
+}
+
+function fetchResignationApplications() {
+    fetch('http://localhost:8080/staff/applyto', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const resignations = data.data;
+        const tableBody = document.getElementById('resignationTableBody');
+        tableBody.innerHTML = ''; // 清空表格内容
+
+        // 添加离职申请数据到表格
+        resignations.forEach(resignation => {
+            const row = tableBody.insertRow(); // 创建一行
+            const attributes = [
+                { label: '离职原因', key: 'reason' },
+                { label: '离职日期', key: 'date' },
+                { label: '状态', key: 'isPassed' } // 假设后端返回状态字段
+            ];
+
+            attributes.forEach(attr => {
+                const cell = row.insertCell(); // 在行中插入单元格
+                if (attr.key === 'isPassed') {
+                    cell.textContent = resignation[attr.key] !== null ? (resignation[attr.key] ? '未通过' : '已通过') : '未审批';
+                } else {
+                    cell.textContent = resignation[attr.key]; // 直接使用后端传入的数据
+                }
+            });
+        });
+
+        document.getElementById('resignationTable').style.display = 'table'; // 显示离职申请表格
+    })
+    .catch(error => {
+        console.error('获取离职申请数据失败:', error);
+        alert('获取离职申请数据失败，请稍后再试');
+    });
+}
+
+function submitLeave() {
+    const reason = document.getElementById('leaveReason').value;
+    const startTime = document.getElementById('leaveStart').value;
+    const endTime = document.getElementById('leaveEnd').value;
+
+    // 创建请求体
+    const leave = {
+        staffId: parseInt(document.getElementById('editId').value),
+        name: document.getElementById('editName').value,
+        reason: reason,
+        startTime: startTime,
+        endTime: endTime
+    };
+
+    // 发送POST请求到后端
+    fetch('http://localhost:8080/staff/apply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(leave)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('请假申请成功:', data);
+        alert('请假申请成功');
+        document.getElementById('leaveModal').style.display = 'none';
+        fetchLeaveApplications(); // 刷新请假申请数据
+    })
+    .catch(error => {
+        console.error('请假申请失败:', error);
+        alert('请假申请失败，请稍后再试');
+    });
+}
+
+function submitResignation() {
+    const reason = document.getElementById('resignationReason').value;
+    const date = document.getElementById('resignationDate').value;
+
+    // 创建请求体
+    const resignation = {
+        staffId: parseInt(document.getElementById('editId').value),
+        name: document.getElementById('editUsername').value,
+        reason: reason,
+        date: date
+    };
+
+    // 发送POST请求到后端
+    fetch('http://localhost:8080/staff/applyto', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(resignation)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('离职申请成功:', data);
+        alert('离职申请成功');
+        document.getElementById('resignationModal').style.display = 'none';
+        fetchResignationApplications(); // 刷新离职申请数据
+    })
+    .catch(error => {
+        console.error('离职申请失败:', error);
+        alert('离职申请失败，请稍后再试');
+    });
+}
 </script>
 </body>
-</html>
+    </html>

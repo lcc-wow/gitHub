@@ -1,10 +1,7 @@
 package com.lcc.mapper;
 
 import com.lcc.pojo.*;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -16,10 +13,10 @@ public interface StaffMapper {
     Staff getBy(String username, String password);
 
     //查询个人信息
-    @Select("select id,username, password, name, gender, age, dept, entrydate from staff where id=#{id}")
+    @Select("select id,username, password, name, gender, age, dept, entrydate from staff  where id=#{id}")
     Staff getById(Integer id);
 
-    //修改个人信息
+    // 修改个人信息
     void update(Staff staff);
 
     //查询工资
@@ -27,11 +24,11 @@ public interface StaffMapper {
     List<Salary> getSalary(Integer id);
 
     //查询个人出勤
-    @Select("select * from condition where staff_id=#{id} order by date desc")
+    @Select("select * from `condition` where staff_id=#{id} order by date desc")
     List<Condition> getCondition(Integer id);
 
     //查看活动
-    @Select("select id,activities, details, total_member from activity where is_ended=false")
+    @Select("select activities, details, total_member,is_ended from activity where is_ended=false")
     List<Activity> getActivity();
 
     //报名活动
@@ -50,17 +47,13 @@ public interface StaffMapper {
     @Insert("insert into apply(staff_id, name, type, start_time, end_time, is_passed) values (#{staffId},#{name},#{type},#{startTime},#{endTime},#{isPassed})")
     void setApply(Apply apply);
 
-    //离职申请
-    @Insert("insert into leave(staff_id, name,reason) values (#{staffId},#{name},#{reason})")
+    @Insert("insert into `leave` (staff_id, name,reason,date,is_passed) values (#{staffId},#{name},#{reason},#{date},#{isPassed})")
     void setApplyTo(Leave leave);
 
-    //查看请假申请
-    @Select("select * from apply")
-    List<Apply> getApply();
+    @Select("select * from apply where staff_id=#{id}")
+    List<Apply> getApply(Integer id);
 
-    //查看离职申请
-    @Select("select * from leave")
+    @Select("select * from `leave`")
     List<Leave> getApplyTo();
 
 }
-

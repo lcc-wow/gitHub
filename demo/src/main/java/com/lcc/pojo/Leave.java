@@ -1,10 +1,13 @@
 package com.lcc.pojo;
 
+import java.time.LocalDate;
+
 public class Leave {
     private Integer staffId;
     private String name;
     private String reason;
-    private Boolean isPassed;
+    private LocalDate date;
+    private String isPassed;
 
     public Integer getStaffId() {
         return staffId;
@@ -30,11 +33,19 @@ public class Leave {
         this.reason = reason;
     }
 
-    public Boolean getIsPassed() {
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public String getIsPassed() {
         return isPassed;
     }
 
-    public void setIsPassed(Boolean isPassed) {
+    public void setIsPassed(String isPassed) {
         this.isPassed = isPassed;
     }
 }

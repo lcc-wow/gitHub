@@ -1,5 +1,7 @@
 package com.lcc.pojo;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,15 +12,16 @@ public class Staff {
     private String name;
     private Short gender;
     private Integer age;
-    private String dept;
+    private Integer dept;
     private LocalDate entrydate;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Boolean isDeleted;
+    private String avatar;
 
     public Staff() {}
 
-    public Staff(Integer id, String username, String password, String name, Short gender, Integer age, String dept, Integer deptId, LocalDate entrydate, LocalDateTime createTime, LocalDateTime updateTime) {
+    public Staff(Integer id, String username, String password, String name, Short gender, Integer age, Integer dept, LocalDate entrydate, LocalDateTime createTime, LocalDateTime updateTime, Boolean isDeleted,String avatar) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -29,6 +32,8 @@ public class Staff {
         this.entrydate = entrydate;
         this.createTime = createTime;
         this.updateTime = updateTime;
+        this.isDeleted = isDeleted;
+        this.avatar = avatar;
     }
 
     public Integer getId() {
@@ -79,11 +84,11 @@ public class Staff {
         this.age = age;
     }
 
-    public String getDept() {
+    public Integer getDept() {
         return dept;
     }
 
-    public void setDept(String dept) {
+    public void setDept(Integer dept) {
         this.dept = dept;
     }
 
@@ -116,6 +121,14 @@ public class Staff {
     }
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
 }

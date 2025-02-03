@@ -39,7 +39,7 @@ public interface StaffService {
     void setApplyTo(Leave leave);
 
     //查看请假申请结果
-    List<Apply> getApply();
+    List<Apply> getApply(Integer id);
 
     //查看离职申请结果
     List<Leave> getApplyTo();

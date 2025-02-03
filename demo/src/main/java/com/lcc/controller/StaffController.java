@@ -2,12 +2,16 @@ package com.lcc.controller;
 
 import com.lcc.pojo.*;
 import com.lcc.service.StaffService;
+import com.lcc.util.AliOSSUtils;
 import com.lcc.util.jwtUtils;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 /*
@@ -24,19 +28,21 @@ public class StaffController {
 
     @Autowired
     private StaffService staffService;
+    @Autowired
+    private AliOSSUtils aliOSSUtils;
 
     /*
      * 查看个人信息
      */
-    @GetMapping
+    @GetMapping("")
     public Result getStaff(@RequestHeader("Authorization")String token) {
         // 去掉Bearer前缀
         String jwtToken = token.replace("Bearer ", "");
         // 验证并解析JWT
         Claims claims = jwtUtils.parseJWT(jwtToken);
         // 从claims中获取员工id
-        Integer id = claims.get("id", Integer.class);
-        Staff staff = staffService.getStaff(id);
+        Integer staffId = claims.get("id", Integer.class);
+        Staff staff = staffService.getStaff(staffId);
         log.info("查看个人信息:{}", staff);
         return Result.success(staff);
     }
@@ -45,10 +51,17 @@ public class StaffController {
      * 修改个人信息
      */
     @PutMapping
-    public Result update(@RequestBody Staff staff) {
+    public Result update(@RequestPart("id") Integer id, @RequestPart("username") String username, @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        Staff staff = new Staff();
+        staff.setId(id);
+        staff.setUsername(username);
+        if (image != null) {
+            String avatarUrl = aliOSSUtils.upload(image);
+            staff.setAvatar(avatarUrl);
+        }
         log.info("修改个人信息:{}", staff);
         staffService.update(staff);
-        return Result.success();
+        return Result.success(staff);
     }
 
     /*
@@ -147,9 +160,15 @@ public class StaffController {
      * 查看申请结果
      */
     @GetMapping("/apply")
-    public Result getApply() {
+    public Result getApply(@RequestHeader("Authorization")String token) {
+        // 去掉Bearer前缀
+        String jwtToken = token.replace("Bearer ", "");
+        // 验证并解析JWT
+        Claims claims = jwtUtils.parseJWT(jwtToken);
+        // 从claims中获取员工id
+        Integer id = claims.get("id", Integer.class);
         log.info("查看请假申请结果");
-        List<Apply> apply = staffService.getApply();
+        List<Apply> apply = staffService.getApply(id);
         return Result.success(apply);
     }
 
